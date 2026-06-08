@@ -1,0 +1,677 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>班级投保信息查询系统</title>
+<style>
+  :root {
+    --blue-deep: #0d3b7a;
+    --blue-main: #1a56b8;
+    --blue-light: #e8f1fc;
+    --red-accent: #c41e3a;
+    --gold: #b8860b;
+    --text: #1a1a1a;
+    --text-secondary: #555;
+    --bg: #f0f2f5;
+    --card-bg: #ffffff;
+    --border: #d9dde3;
+    --shadow-sm: 0 1px 3px rgba(0,0,0,0.06);
+    --shadow-md: 0 4px 20px rgba(0,0,0,0.08);
+    --shadow-lg: 0 12px 40px rgba(0,0,0,0.12);
+    --radius: 10px;
+    --radius-sm: 6px;
+    --transition: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans SC", sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    -webkit-font-smoothing: antialiased;
+    background-image:
+      radial-gradient(ellipse at 20% 20%, rgba(26,86,184,0.03) 0%, transparent 60%),
+      radial-gradient(ellipse at 80% 80%, rgba(196,30,58,0.02) 0%, transparent 60%);
+  }
+
+  /* ===== 顶部导航条 ===== */
+  .top-bar {
+    background: var(--blue-deep);
+    color: white;
+    padding: 0;
+    position: relative;
+    overflow: hidden;
+  }
+  .top-bar::after {
+    content: '';
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--red-accent), var(--gold), var(--red-accent));
+  }
+  .top-bar-inner {
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 14px 24px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+  .emblem {
+    width: 44px;
+    height: 44px;
+    flex-shrink: 0;
+    background: rgba(255,255,255,0.15);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    border: 2px solid rgba(255,255,255,0.3);
+  }
+  .top-bar h1 {
+    font-size: 20px;
+    font-weight: 600;
+    letter-spacing: 0.03em;
+    color: #fff;
+  }
+  .top-bar .subtitle {
+    font-size: 12px;
+    color: rgba(255,255,255,0.7);
+    margin-top: 2px;
+  }
+
+  /* ===== 主体 ===== */
+  .main-container {
+    flex: 1;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    padding: 40px 20px 60px;
+  }
+
+  .card {
+    background: var(--card-bg);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-md);
+    width: 100%;
+    max-width: 520px;
+    overflow: hidden;
+    border: 1px solid var(--border);
+  }
+
+  /* 卡片头部 */
+  .card-header {
+    background: linear-gradient(135deg, #f8fafd 0%, #eef3f9 100%);
+    padding: 28px 32px 22px;
+    text-align: center;
+    border-bottom: 1px solid var(--border);
+    position: relative;
+  }
+  .card-header .icon-wrap {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 56px;
+    height: 56px;
+    background: var(--blue-main);
+    color: white;
+    border-radius: 50%;
+    font-size: 26px;
+    margin-bottom: 12px;
+    box-shadow: 0 4px 14px rgba(26,86,184,0.25);
+  }
+  .card-header h2 {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--blue-deep);
+    letter-spacing: 0.04em;
+  }
+  .card-header p {
+    font-size: 13px;
+    color: var(--text-secondary);
+    margin-top: 6px;
+  }
+
+  /* 表单区 */
+  .card-body {
+    padding: 28px 32px;
+  }
+  .form-group {
+    margin-bottom: 20px;
+  }
+  .form-group label {
+    display: block;
+    font-size: 14px;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 8px;
+    letter-spacing: 0.02em;
+  }
+  .input-row {
+    display: flex;
+    gap: 10px;
+  }
+  .input-row input {
+    flex: 1;
+    padding: 13px 16px;
+    font-size: 16px;
+    border: 2px solid var(--border);
+    border-radius: var(--radius-sm);
+    outline: none;
+    transition: var(--transition);
+    font-family: "SF Mono", "Consolas", "Menlo", "Courier New", monospace;
+    letter-spacing: 0.06em;
+    color: #333;
+    background: #fafbfc;
+  }
+  .input-row input:focus {
+    border-color: var(--blue-main);
+    box-shadow: 0 0 0 3px rgba(26,86,184,0.1);
+    background: #fff;
+  }
+  .input-row input::placeholder {
+    color: #bbb;
+    font-family: inherit;
+    letter-spacing: 0.02em;
+    font-size: 14px;
+  }
+  .btn {
+    padding: 13px 28px;
+    font-size: 15px;
+    font-weight: 600;
+    border: none;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: var(--transition);
+    letter-spacing: 0.04em;
+    white-space: nowrap;
+    position: relative;
+    overflow: hidden;
+  }
+  .btn-primary {
+    background: var(--blue-main);
+    color: white;
+    box-shadow: 0 2px 8px rgba(26,86,184,0.3);
+  }
+  .btn-primary:hover {
+    background: #154a9e;
+    box-shadow: 0 4px 16px rgba(26,86,184,0.4);
+    transform: translateY(-1px);
+  }
+  .btn-primary:active {
+    transform: translateY(0);
+    box-shadow: 0 1px 4px rgba(26,86,184,0.3);
+  }
+  .btn-primary::after {
+    content: '';
+    position: absolute;
+    top: 50%; left: 50%;
+    width: 0; height: 0;
+    background: rgba(255,255,255,0.2);
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    transition: width 0.6s, height 0.6s;
+  }
+  .btn-primary:active::after {
+    width: 300px; height: 300px;
+  }
+
+  /* 提示文字 */
+  .hint {
+    font-size: 12px;
+    color: #999;
+    margin-top: 8px;
+    text-align: center;
+  }
+
+  /* 结果区域 */
+  .result-area {
+    display: none;
+    margin-top: 20px;
+    animation: fadeSlideIn 0.4s ease;
+  }
+  .result-area.show {
+    display: block;
+  }
+
+  @keyframes fadeSlideIn {
+    from { opacity: 0; transform: translateY(12px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* 成功结果卡片 */
+  .result-card {
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+    border: 1px solid #d4e4d4;
+    background: #f9fdf9;
+  }
+  .result-card .result-head {
+    background: linear-gradient(135deg, #e8f5e9, #dcedd8);
+    padding: 14px 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    border-bottom: 1px solid #c8e0c8;
+  }
+  .result-card .result-head .check-icon {
+    width: 32px; height: 32px;
+    background: #2e7d32;
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    flex-shrink: 0;
+  }
+  .result-card .result-head span {
+    font-weight: 700;
+    color: #2e7d32;
+    font-size: 14px;
+    letter-spacing: 0.03em;
+  }
+  .result-card .result-body {
+    padding: 18px 20px;
+  }
+  .info-row {
+    display: flex;
+    align-items: center;
+    padding: 10px 0;
+    border-bottom: 1px dashed #e0e8e0;
+  }
+  .info-row:last-child {
+    border-bottom: none;
+  }
+  .info-row .info-label {
+    width: 80px;
+    flex-shrink: 0;
+    font-size: 13px;
+    color: #888;
+    letter-spacing: 0.02em;
+  }
+  .info-row .info-value {
+    flex: 1;
+    font-size: 16px;
+    font-weight: 600;
+    color: #1a1a1a;
+    letter-spacing: 0.03em;
+  }
+  .info-row .info-value.fee-80 {
+    color: #1a56b8;
+  }
+  .info-row .info-value.fee-180 {
+    color: #c41e3a;
+  }
+  .fee-badge {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 700;
+  }
+  .fee-badge.fee-80 {
+    background: #e8f1fc;
+    color: #1a56b8;
+  }
+  .fee-badge.fee-180 {
+    background: #fde8ec;
+    color: #c41e3a;
+  }
+
+  /* 未找到结果 */
+  .not-found-card {
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+    border: 1px solid #f0d9d9;
+    background: #fef9f9;
+  }
+  .not-found-card .nf-head {
+    background: linear-gradient(135deg, #fef5f5, #fde8e8);
+    padding: 14px 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    border-bottom: 1px solid #f0cccc;
+  }
+  .not-found-card .nf-head .warn-icon {
+    width: 32px; height: 32px;
+    background: #c41e3a;
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    flex-shrink: 0;
+  }
+  .not-found-card .nf-head span {
+    font-weight: 700;
+    color: #a01830;
+    font-size: 14px;
+  }
+  .not-found-card .nf-body {
+    padding: 16px 20px;
+    font-size: 13px;
+    color: #888;
+    line-height: 1.8;
+  }
+
+  /* 安全提示 */
+  .security-notice {
+    margin-top: 24px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 11px;
+    color: #aaa;
+    justify-content: center;
+  }
+  .security-notice .lock-icon {
+    font-size: 12px;
+  }
+
+  /* 底部 */
+  .footer {
+    text-align: center;
+    padding: 20px;
+    font-size: 11px;
+    color: #bbb;
+    letter-spacing: 0.02em;
+    border-top: 1px solid var(--border);
+    background: #fafbfc;
+  }
+
+  /* 加载动画 */
+  .loading-spinner {
+    display: none;
+    width: 24px;
+    height: 24px;
+    border: 3px solid rgba(26,86,184,0.15);
+    border-top-color: var(--blue-main);
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+    margin: 0 auto;
+  }
+  .loading-spinner.show {
+    display: block;
+  }
+  @keyframes spin {
+    to { transform: rotate(360deg); }
+  }
+
+  /* 响应式 */
+  @media (max-width: 600px) {
+    .top-bar-inner {
+      padding: 12px 16px;
+      gap: 10px;
+    }
+    .top-bar h1 {
+      font-size: 17px;
+    }
+    .emblem {
+      width: 36px; height: 36px;
+      font-size: 18px;
+    }
+    .main-container {
+      padding: 20px 12px 40px;
+    }
+    .card-header {
+      padding: 22px 20px 18px;
+    }
+    .card-header h2 {
+      font-size: 16px;
+    }
+    .card-body {
+      padding: 20px;
+    }
+    .input-row {
+      flex-direction: column;
+    }
+    .btn {
+      width: 100%;
+      text-align: center;
+    }
+    .info-row {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 4px;
+    }
+    .info-row .info-label {
+      width: auto;
+    }
+  }
+</style>
+</head>
+<body>
+
+<!-- 顶部 -->
+<header class="top-bar">
+  <div class="top-bar-inner">
+    <div class="emblem">🏫</div>
+    <div>
+      <h1>班级投保信息查询系统</h1>
+      <div class="subtitle">学生平安保险 · 在线确认平台</div>
+    </div>
+  </div>
+</header>
+
+<!-- 主体 -->
+<main class="main-container">
+  <div class="card">
+
+    <div class="card-header">
+      <div class="icon-wrap">🔍</div>
+      <h2>投保信息确认</h2>
+      <p>请输入本人身份证号码进行查询</p>
+    </div>
+
+    <div class="card-body">
+      <div class="form-group">
+        <label for="idCardInput">身份证号码</label>
+        <div class="input-row">
+          <input
+            type="text"
+            id="idCardInput"
+            placeholder="请输入18位身份证号码"
+            maxlength="18"
+            autocomplete="off"
+            inputmode="numeric"
+          >
+          <button class="btn btn-primary" id="searchBtn" onclick="doSearch()">
+            查 询
+          </button>
+        </div>
+      </div>
+      <div class="loading-spinner" id="loadingSpinner"></div>
+
+      <!-- 查询结果 -->
+      <div class="result-area" id="resultArea"></div>
+
+      <!-- 安全提示 -->
+      <div class="security-notice">
+        <span class="lock-icon">🔒</span>
+        <span>本系统采用加密传输，保障您的个人信息安全</span>
+      </div>
+    </div>
+
+  </div>
+</main>
+
+<!-- 底部 -->
+<footer class="footer">
+  本查询结果仅供本人核对投保信息使用 · 如有疑问请联系班主任
+</footer>
+
+<script>
+// ==================== 数据区 ====================
+var RECORDS = [
+  {"name":"蔡锦瀚","id_card":"445121200910165315","fee":180},
+  {"name":"陈洁雯","id_card":"440184200912022423","fee":80},
+  {"name":"冯一钒","id_card":"441223201002110422","fee":80},
+  {"name":"郭培珺","id_card":"440105201007207427","fee":180},
+  {"name":"郭诗琪","id_card":"440111200912253629","fee":80},
+  {"name":"郭晓然","id_card":"41138120090923422X","fee":80},
+  {"name":"黄烽原","id_card":"350581201008153535","fee":80},
+  {"name":"简诗渝","id_card":"440105201005215722","fee":80},
+  {"name":"赖诗涵","id_card":"440183201004043729","fee":80},
+  {"name":"黎子晴","id_card":"440113201008038143","fee":80},
+  {"name":"李思源","id_card":"440982201007194300","fee":80},
+  {"name":"卢俊翔","id_card":"445221201005112213","fee":180},
+  {"name":"欧星宏","id_card":"44010320091020513X","fee":180},
+  {"name":"沈靖希","id_card":"810000200910100500","fee":80},
+  {"name":"时潇然","id_card":"341225200811167079","fee":80},
+  {"name":"谢少欢","id_card":"440111201007092743","fee":80},
+  {"name":"徐晓茵","id_card":"440104200911076129","fee":80},
+  {"name":"严晓彤","id_card":"445224200910162725","fee":80},
+  {"name":"叶子玥","id_card":"440184201008240929","fee":80},
+  {"name":"周灏然","id_card":"440305200809218618","fee":80},
+  {"name":"朱颖琳","id_card":"440114201008110826","fee":80},
+  {"name":"左昕洋","id_card":"440801201002122929","fee":80}
+];
+
+// 建立索引
+var lookupMap = {};
+RECORDS.forEach(function(r) {
+  lookupMap[r.id_card.toUpperCase()] = r;
+});
+
+// ==================== 查询逻辑 ====================
+function doSearch() {
+  var input = document.getElementById('idCardInput');
+  var raw = input.value.trim();
+  var resultArea = document.getElementById('resultArea');
+  var spinner = document.getElementById('loadingSpinner');
+
+  // 输入校验
+  if (!raw) {
+    shakeInput(input);
+    showResult('empty');
+    return;
+  }
+  if (raw.length !== 18) {
+    shakeInput(input);
+    showResult('invalid');
+    return;
+  }
+
+  // 模拟加载
+  spinner.classList.add('show');
+  resultArea.classList.remove('show');
+  resultArea.innerHTML = '';
+
+  setTimeout(function() {
+    spinner.classList.remove('show');
+    var key = raw.toUpperCase();
+    var record = lookupMap[key];
+
+    if (record) {
+      showResult('found', record);
+    } else {
+      showResult('notfound');
+    }
+  }, 400 + Math.random() * 300);
+}
+
+function showResult(type, record) {
+  var area = document.getElementById('resultArea');
+  var html = '';
+
+  switch (type) {
+    case 'empty':
+      html = '<div class="not-found-card">' +
+        '<div class="nf-head"><div class="warn-icon">!</div><span>请输入身份证号码</span></div>' +
+        '<div class="nf-body">请输入您的18位身份证号码后点击"查询"按钮。</div>' +
+        '</div>';
+      break;
+
+    case 'invalid':
+      html = '<div class="not-found-card">' +
+        '<div class="nf-head"><div class="warn-icon">!</div><span>身份证号码格式不正确</span></div>' +
+        '<div class="nf-body">请输入完整的18位身份证号码（末位可能为X）。</div>' +
+        '</div>';
+      break;
+
+    case 'notfound':
+      html = '<div class="not-found-card">' +
+        '<div class="nf-head"><div class="warn-icon">!</div><span>未查到投保记录</span></div>' +
+        '<div class="nf-body">' +
+        '未在本次投保名单中找到该身份证号对应的记录。<br>' +
+        '可能原因：<br>' +
+        '① 您尚未在本次投保接龙中报名；<br>' +
+        '② 身份证号码输入有误，请核对后重试；<br>' +
+        '③ 如确认已报名，请联系班主任核实。<br>' +
+        '</div>' +
+        '</div>';
+      break;
+
+    case 'found':
+      var feeClass = record.fee === 180 ? 'fee-180' : 'fee-80';
+      var maskedId = record.id_card.substring(0, 6) + '********' + record.id_card.substring(14);
+      html = '<div class="result-card">' +
+        '<div class="result-head">' +
+        '<div class="check-icon">✓</div>' +
+        '<span>查询成功 — 投保信息确认</span>' +
+        '</div>' +
+        '<div class="result-body">' +
+        '<div class="info-row">' +
+        '<span class="info-label">姓　名</span>' +
+        '<span class="info-value">' + record.name + '</span>' +
+        '</div>' +
+        '<div class="info-row">' +
+        '<span class="info-label">身份证号</span>' +
+        '<span class="info-value" style="font-family:monospace;font-size:13px;">' + maskedId + '</span>' +
+        '</div>' +
+        '<div class="info-row">' +
+        '<span class="info-label">保费档位</span>' +
+        '<span class="info-value"><span class="fee-badge ' + feeClass + '">' + record.fee + '元/年</span></span>' +
+        '</div>' +
+        '<div class="info-row">' +
+        '<span class="info-label">投保状态</span>' +
+        '<span class="info-value" style="color:#2e7d32;">✓ 已登记投保</span>' +
+        '</div>' +
+        '</div>' +
+        '</div>';
+      break;
+  }
+
+  area.innerHTML = html;
+  area.classList.add('show');
+}
+
+function shakeInput(input) {
+  input.style.borderColor = '#c41e3a';
+  input.style.boxShadow = '0 0 0 3px rgba(196,30,58,0.1)';
+  setTimeout(function() {
+    input.style.borderColor = '';
+    input.style.boxShadow = '';
+  }, 600);
+}
+
+// 回车键查询
+document.getElementById('idCardInput').addEventListener('keydown', function(e) {
+  if (e.key === 'Enter') {
+    e.preventDefault();
+    doSearch();
+  }
+});
+
+// 输入时自动大写X
+document.getElementById('idCardInput').addEventListener('input', function(e) {
+  this.value = this.value.replace(/[^0-9Xx]/g, '').toUpperCase();
+});
+
+// 自动聚焦
+window.addEventListener('load', function() {
+  document.getElementById('idCardInput').focus();
+});
+</script>
+
+</body>
+</html>
