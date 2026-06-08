@@ -363,6 +363,58 @@
     line-height: 1.8;
   }
 
+  /* 确认按钮 */
+  .confirm-section {
+    margin-top: 16px;
+    text-align: center;
+  }
+  .btn-confirm {
+    padding: 14px 40px;
+    font-size: 16px;
+    font-weight: 700;
+    border: 2px solid #2e7d32;
+    border-radius: 30px;
+    cursor: pointer;
+    background: #fff;
+    color: #2e7d32;
+    letter-spacing: 0.06em;
+    transition: var(--transition);
+    position: relative;
+    overflow: hidden;
+  }
+  .btn-confirm:hover {
+    background: #2e7d32;
+    color: #fff;
+    box-shadow: 0 4px 18px rgba(46,125,50,0.35);
+    transform: translateY(-2px);
+  }
+  .btn-confirm:active {
+    transform: scale(0.96);
+  }
+  .btn-confirm.confirmed {
+    background: #2e7d32;
+    color: #fff;
+    border-color: #2e7d32;
+    cursor: default;
+    pointer-events: none;
+    animation: confirmPop 0.5s ease;
+  }
+  @keyframes confirmPop {
+    0%   { transform: scale(1); }
+    40%  { transform: scale(1.08); }
+    100% { transform: scale(1); }
+  }
+  .confirmed-time {
+    display: block;
+    margin-top: 8px;
+    font-size: 12px;
+    color: #888;
+  }
+  .confirmed-time .time-val {
+    color: #2e7d32;
+    font-weight: 600;
+  }
+
   /* 安全提示 */
   .security-notice {
     margin-top: 24px;
@@ -634,8 +686,14 @@ function showResult(type, record) {
         '</div>' +
         '<div class="info-row">' +
         '<span class="info-label">投保状态</span>' +
-        '<span class="info-value" style="color:#2e7d32;">✓ 已登记投保</span>' +
+        '<span class="info-value" id="statusText" style="color:#2e7d32;">✓ 已登记投保</span>' +
         '</div>' +
+        '</div>' +
+        '<div class="confirm-section" id="confirmSection">' +
+        '<button class="btn-confirm" id="confirmBtn" onclick="doConfirm(\'' + record.id_card + '\')">' +
+        '✅ 确认无误' +
+        '</button>' +
+        '<span class="confirmed-time" id="confirmedTime"></span>' +
         '</div>' +
         '</div>';
       break;
@@ -643,6 +701,13 @@ function showResult(type, record) {
 
   area.innerHTML = html;
   area.classList.add('show');
+
+  // 如果查询成功，检查是否已确认过
+  if (type === 'found' && record) {
+    setTimeout(function() {
+      restoreConfirmState(record.id_card);
+    }, 50);
+  }
 }
 
 function shakeInput(input) {
@@ -666,6 +731,80 @@ document.getElementById('idCardInput').addEventListener('keydown', function(e) {
 document.getElementById('idCardInput').addEventListener('input', function(e) {
   this.value = this.value.replace(/[^0-9Xx]/g, '').toUpperCase();
 });
+
+// ==================== 确认无误逻辑 ====================
+var CONFIRM_PREFIX = 'bx_confirm_';
+
+// 获取某条记录的确认状态
+function getConfirmStatus(idCard) {
+  var key = CONFIRM_PREFIX + idCard.toUpperCase();
+  var saved = localStorage.getItem(key);
+  if (saved) {
+    try {
+      return JSON.parse(saved);
+    } catch(e) {
+      return null;
+    }
+  }
+  return null;
+}
+
+// 设置确认状态
+function setConfirmStatus(idCard, name) {
+  var key = CONFIRM_PREFIX + idCard.toUpperCase();
+  var data = {
+    name: name,
+    time: new Date().toLocaleString('zh-CN', {
+      year: 'numeric', month: '2-digit', day: '2-digit',
+      hour: '2-digit', minute: '2-digit', second: '2-digit',
+      hour12: false
+    })
+  };
+  localStorage.setItem(key, JSON.stringify(data));
+  return data;
+}
+
+// 点击确认按钮
+function doConfirm(idCard) {
+  var btn = document.getElementById('confirmBtn');
+  var timeEl = document.getElementById('confirmedTime');
+  var statusEl = document.getElementById('statusText');
+
+  if (!btn || btn.classList.contains('confirmed')) return;
+
+  // 从当前页面获取姓名
+  var nameEl = document.querySelector('.result-card .info-row .info-value');
+  var name = nameEl ? nameEl.textContent.trim() : '';
+
+  // 保存确认状态
+  var data = setConfirmStatus(idCard, name);
+
+  // 更新UI
+  btn.textContent = '✅ 已确认';
+  btn.classList.add('confirmed');
+  timeEl.innerHTML = '确认时间：<span class="time-val">' + data.time + '</span>';
+  statusEl.innerHTML = '✅ 已确认无误';
+  statusEl.style.color = '#1b5e20';
+}
+
+// 页面加载时，如果结果中有确认按钮，检查是否已确认
+function restoreConfirmState(idCard) {
+  var status = getConfirmStatus(idCard);
+  if (status) {
+    var btn = document.getElementById('confirmBtn');
+    var timeEl = document.getElementById('confirmedTime');
+    var statusEl = document.getElementById('statusText');
+    if (btn) {
+      btn.textContent = '✅ 已确认';
+      btn.classList.add('confirmed');
+      timeEl.innerHTML = '确认时间：<span class="time-val">' + status.time + '</span>';
+      if (statusEl) {
+        statusEl.innerHTML = '✅ 已确认无误';
+        statusEl.style.color = '#1b5e20';
+      }
+    }
+  }
+}
 
 // 自动聚焦
 window.addEventListener('load', function() {
